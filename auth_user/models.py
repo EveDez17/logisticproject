@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 class User(AbstractUser):
     class Role(models.TextChoices):
@@ -23,4 +23,19 @@ class User(AbstractUser):
         if not self.pk:
             self.role = self.base_role
             return super().save(*args, **kwargs)
+        
+class SecurityManager(BaseUserManager):
+    def get_queryset(self, *args, **kwargs):
+        results = super().get_queryset(*args, **kwargs)
+        return results.filter(role=User.Role.SECURITY)
+        
+class Security(User):
+    
+    base_role = User.Role.SECURITY
+    
+    class Meta:
+        proxy = True
+        
+    def welcome(self):
+        return "Warehouse Security Gate Only"
         
